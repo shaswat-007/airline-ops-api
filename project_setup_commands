@@ -1,0 +1,58 @@
+Write-Host "=== Airline Ops Dev Environment Setup ==="
+
+# 1. Check Python
+if (-Not (Get-Command python -ErrorAction SilentlyContinue)) {
+    Write-Host "Python not found. Installing..."
+    Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.12.4/python-3.12.4-amd64.exe" -OutFile "$env:TEMP\python_installer.exe"
+    Start-Process "$env:TEMP\python_installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait
+} else {
+    Write-Host "Python is already installed"
+}
+
+# 2. Check Git
+if (-Not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Host "Git not found. Installing..."
+    Invoke-WebRequest -Uri "https://github.com/git-for-windows/git/releases/download/v2.46.0.windows.1/Git-2.46.0-64-bit.exe" -OutFile "$env:TEMP\git_installer.exe"
+    Start-Process "$env:TEMP\git_installer.exe" -ArgumentList "/VERYSILENT" -Wait
+} else {
+    Write-Host "Git is already installed"
+}
+
+# 3. Install VS Code if not installed
+$vscodePath = "$env:LOCALAPPDATA\Programs\Microsoft VS Code\Code.exe"
+if (-Not (Test-Path $vscodePath)) {
+    Write-Host "Downloading and installing VS Code..."
+    $installerPath = "$env:TEMP\vscode_installer.exe"
+    Invoke-WebRequest -Uri "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user" -OutFile $installerPath
+    Start-Process $installerPath -ArgumentList "/verysilent" -Wait
+
+    # Give VS Code a moment, then kill it if it started automatically
+    Start-Sleep -Seconds 5
+    Get-Process -Name "Code" -ErrorAction SilentlyContinue | Stop-Process -Force
+} else {
+    Write-Host "VS Code is already installed"
+}
+
+# 4. Add VS Code to PATH
+$env:Path += ";$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin"
+[Environment]::SetEnvironmentVariable("Path", $env:Path, [System.EnvironmentVariableTarget]::User)
+
+# 5. Install Python extension in VS Code
+Write-Host "Installing VS Code Python extension..."
+& "code" --install-extension ms-python.python
+
+# 6. Create workspace folder
+$workspacePath = "$env:USERPROFILE\Documents\AirlineOpsWorkspace"
+if (-Not (Test-Path $workspacePath)) {
+    New-Item -ItemType Directory -Path $workspacePath | Out-Null
+}
+
+# 7. Create a sample README file
+$readmePath = Join-Path $workspacePath "README.md"
+"## Airline Ops Workspace`nReady for coding!" | Out-File -FilePath $readmePath
+
+# 8. Open VS Code in workspace
+Write-Host "Opening VS Code in workspace..."
+& "code" $workspacePath
+
+Write-Host "=== Setup Complete! You are ready to code. ==="
