@@ -9,7 +9,7 @@ def test_create_and_list_flights():
         "FlightNo": "0085",
         "Origin": "DEL",
         "Destination": "MAX",
-        "DATE": "2025-10-29"
+        "Date": "2025-10-29"
     })
     assert response.status_code == 200
     assert response.json()["FlightNo"] == "0085"
