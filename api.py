@@ -29,7 +29,8 @@ def get_flights():
 @app.post("/flights")
 def add_flight(flight: Flight):
     df = load_flight()
-    new_row = pd.DataFrame([flight.dict()])
+    new_row = pd.DataFrame([flight.model_dump()])
     df = pd.concat([df,new_row], ignore_index=True)
     save_flights(df)
-    return{"message": "Flight added successfully"}
+
+    return flight
