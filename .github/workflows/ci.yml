@@ -25,3 +25,4 @@ jobs:
         run: |
           # For now, just check Python version
           python --version
+          pytest
